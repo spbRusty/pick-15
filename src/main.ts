@@ -13,10 +13,12 @@ let busy = false;
 let mode: "menu" | "game" = "menu";
 let statusMessage = "Подключаем игровые сервисы…";
 
-const escapeHtml = (value: string) =>
-  value.replace(/[&<>"']/g, (char) => ({
+const escapeHtml = (value: string) => {
+  const replacements: Record<string, string> = {
     "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
-  })[char]!);
+  };
+  return value.replace(/[&<>"']/g, (char) => replacements[char]);
+};
 
 async function initYandex(): Promise<void> {
   try {
