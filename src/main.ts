@@ -65,6 +65,7 @@ function renderMenu(): void {
 function renderGame(): void {
   const you = state.moves.filter((move) => move.player === "you").map((move) => move.number);
   const opponent = state.moves.filter((move) => move.player === "opponent").map((move) => move.number);
+  const opponentSum = opponent.reduce((sum, number) => sum + number, 0);
   const turnText = state.status !== "playing"
     ? state.status === "you-won" ? "Победа" : state.status === "opponent-won" ? "Поражение" : "Ничья"
     : busy ? "Ход соперника…" : state.turn === "you" ? "Ваш ход" : "Ход соперника";
@@ -90,6 +91,10 @@ function renderGame(): void {
         <div class="picked-row">
           <div><small>ВАШИ ЧИСЛА</small><strong>${you.length ? you.join("  +  ") : "—"}</strong></div>
           <div class="sum-value">${you.reduce((sum, n) => sum + n, 0)} <small>/ 15</small></div>
+        </div>
+        <div class="picked-row opponent-picked-row">
+          <div><small>ЧИСЛА СОПЕРНИКА</small><strong>${opponent.length ? opponent.join("  +  ") : "—"}</strong></div>
+          <div class="sum-value opponent-sum">${opponentSum} <small>/ 15</small></div>
         </div>
         ${state.status !== "playing" ? `<div class="result-panel"><strong>${turnText}</strong><span>${state.status === "you-won" ? "Вы собрали комбинацию 15." : state.status === "opponent-won" ? "Соперник собрал комбинацию 15." : "Все числа закончились."}</span><button class="primary-button" id="again">В меню</button></div>` : ""}
         <div class="game-footnote">${busy ? "Ожидаем ход соперника" : state.status === "playing" ? "Числа нельзя выбирать повторно" : "Партия завершена"}</div>
