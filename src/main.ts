@@ -116,6 +116,7 @@ function startGame(online: boolean): void {
   busy = false;
   opponentName = online ? "Игрок Яндекс Игр" : "Компьютер";
   mode = "game";
+  ysdk?.features?.GameplayAPI?.start();
   render();
   if (online) void findOpponent();
   else statusMessage = "Тренировка";
@@ -152,9 +153,11 @@ async function findOpponent(): Promise<void> {
 async function makeMove(number: number): Promise<void> {
   if (busy || state.turn !== "you" || state.status !== "playing") return;
   state = applyMove(state, "you", number);
-  try {
-    ysdk?.multiplayer.sessions.commit({ type: "pick", number });
-  } catch { /* SDK may be unavailable in local preview. */ }
+  if (onlineSession) {
+    try {
+      ysdk?.multiplayer.sessions.commit({ type: "pick", number });
+    } catch { /* SDK may be unavailable in local preview. */ }
+  }
   render();
   if (state.status !== "playing") {
     await finishGame();
@@ -191,7 +194,8 @@ function chooseComputerMove(): number {
 async function finishGame(): Promise<void> {
   busy = false;
   try {
-    if (ysdk) await ysdk.multiplayer.sessions.push({ meta1: 0 });
+    ysdk?.features?.GameplayAPI?.stop();
+    if (ysdk && onlineSession) await ysdk.multiplayer.sessions.push({ meta1: 0 });
   } catch {
     statusMessage = "Партия завершена. Не удалось сохранить её для будущих соперников.";
   }
@@ -199,6 +203,7 @@ async function finishGame(): Promise<void> {
 }
 
 function goMenu(): void {
+  ysdk?.features?.GameplayAPI?.stop();
   mode = "menu";
   busy = false;
   render();
