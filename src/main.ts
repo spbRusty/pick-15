@@ -3,36 +3,21 @@ import { applyMove, createGame, readOpponentMoves, type GameState } from "./game
 
 const app = document.querySelector<HTMLDivElement>("#app")!;
 let ysdk: YaGamesSDK | null = null;
-let playerName = "Игрок";
 let state: GameState = createGame();
 let opponentMoves: number[] = [];
 let opponentIndex = 0;
-let opponentName = "Соперник";
 let onlineSession = false;
 let busy = false;
 let mode: "menu" | "game" = "menu";
-let statusMessage = "Подключаем игровые сервисы…";
-
-const escapeHtml = (value: string) => {
-  const replacements: Record<string, string> = {
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
-  };
-  return value.replace(/[&<>"']/g, (char) => replacements[char]);
-};
 
 async function initYandex(): Promise<void> {
   try {
     if (typeof YaGames === "undefined") {
-      statusMessage = "Локальный режим. SDK Яндекс Игр доступен после загрузки игры на платформу.";
       render();
       return;
     }
     ysdk = await YaGames.init();
-    const player = await ysdk.getPlayer();
-    playerName = player.getName() || "Игрок";
-    statusMessage = "Игровые сервисы подключены";
   } catch {
-    statusMessage = "Не удалось подключить SDK. Доступна тренировка.";
   }
   render();
 }
@@ -113,18 +98,14 @@ function startGame(online: boolean): void {
   opponentMoves = [];
   onlineSession = online;
   busy = false;
-  opponentName = online ? "Игрок Яндекс Игр" : "Компьютер";
   mode = "game";
   ysdk?.features?.GameplayAPI?.start();
   render();
   if (online) void findOpponent();
-  else statusMessage = "Тренировка";
 }
 
 async function findOpponent(): Promise<void> {
   if (!ysdk) {
-    opponentName = "Компьютер (демо)";
-    statusMessage = "SDK недоступен — запущена тренировка";
     render();
     return;
   }
@@ -137,14 +118,9 @@ async function findOpponent(): Promise<void> {
     const opponent = opponents[0];
     if (opponent) {
       opponentMoves = readOpponentMoves(opponent);
-      opponentName = opponent.player?.name || "Игрок Яндекс Игр";
     } else {
-      opponentName = "Компьютер";
-      statusMessage = "Пока нет готовых партий. Вы сыграете тренировочную партию.";
     }
   } catch {
-    opponentName = "Компьютер";
-    statusMessage = "Не удалось найти соперника. Запущена тренировка.";
   }
   render();
 }
@@ -196,7 +172,6 @@ async function finishGame(): Promise<void> {
     ysdk?.features?.GameplayAPI?.stop();
     if (ysdk && onlineSession) await ysdk.multiplayer.sessions.push({ meta1: 0 });
   } catch {
-    statusMessage = "Партия завершена. Не удалось сохранить её для будущих соперников.";
   }
   render();
 }
