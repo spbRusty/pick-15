@@ -53,7 +53,7 @@ function renderGame(): void {
     ? numbers.map((number) => {
         const winning = state.status === (player === "you" ? "you-won" : "opponent-won")
           && state.winningLine?.includes(number);
-        return `<span class="hand-number ${winning ? (player === "you" ? "winning-you" : "winning-opponent") : ""}">${number}</span>`;
+        return `${numbers.indexOf(number) > 0 ? '<span class="hand-plus">+</span>' : ""}<span class="hand-number ${winning ? (player === "you" ? "winning-you" : "winning-opponent") : ""}">${number}</span>`;
       }).join("")
     : "—";
   const turnText = state.status !== "playing"
