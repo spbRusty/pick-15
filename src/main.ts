@@ -49,15 +49,20 @@ function renderGame(): void {
   const you = state.moves.filter((move) => move.player === "you").map((move) => move.number);
   const opponent = state.moves.filter((move) => move.player === "opponent").map((move) => move.number);
   const opponentSum = opponent.reduce((sum, number) => sum + number, 0);
+  const renderHand = (numbers: number[], player: "you" | "opponent") => numbers.length
+    ? numbers.map((number) => {
+        const winning = state.status === (player === "you" ? "you-won" : "opponent-won")
+          && state.winningLine?.includes(number);
+        return `<span class="hand-number ${winning ? (player === "you" ? "winning-you" : "winning-opponent") : ""}">${number}</span>`;
+      }).join("")
+    : "—";
   const turnText = state.status !== "playing"
     ? state.status === "you-won" ? "Победа" : state.status === "opponent-won" ? "Поражение" : "Ничья"
     : busy ? "Ход соперника…" : state.turn === "you" ? "Ваш ход" : "Ход соперника";
   const numberButtons = Array.from({ length: 9 }, (_, index) => index + 1).map((number) => {
     const used = !state.available.includes(number);
     const owner = state.moves.find((move) => move.number === number)?.player;
-    const isWinning = state.winningLine?.includes(number);
-    const winningClass = isWinning ? (state.status === "you-won" ? "winning winning-you" : "winning winning-opponent") : "";
-    return `<button class="number-tile ${used ? "used" : ""} ${owner === "you" ? "mine" : ""} ${owner === "opponent" ? "theirs" : ""} ${winningClass}" data-number="${number}" ${used || busy || state.status !== "playing" || state.turn !== "you" ? "disabled" : ""}>${number}<i>${owner === "you" ? "ВЫ" : owner === "opponent" ? "ИИ" : ""}</i></button>`;
+    return `<button class="number-tile ${used ? "used" : ""} ${owner === "you" ? "mine" : ""} ${owner === "opponent" ? "theirs" : ""}" data-number="${number}" ${used || busy || state.status !== "playing" || state.turn !== "you" ? "disabled" : ""}>${number}<i>${owner === "you" ? "ВЫ" : owner === "opponent" ? "ИИ" : ""}</i></button>`;
   }).join("");
 
   app.innerHTML = `
@@ -66,12 +71,12 @@ function renderGame(): void {
       <section class="game-layout">
         <div class="turn-label">${turnText}</div>
         <div class="picked-row opponent-picked-row">
-          <div><small>ЧИСЛА СОПЕРНИКА</small><strong>${opponent.length ? opponent.join("  +  ") : "—"}</strong></div>
+          <div><small>ЧИСЛА СОПЕРНИКА</small><strong class="hand-numbers">${renderHand(opponent, "opponent")}</strong></div>
           <div class="sum-value opponent-sum">${opponentSum} <small>/ 15</small></div>
         </div>
         <div class="board">${numberButtons}</div>
         <div class="picked-row">
-          <div><small>ВАШИ ЧИСЛА</small><strong>${you.length ? you.join("  +  ") : "—"}</strong></div>
+          <div><small>ВАШИ ЧИСЛА</small><strong class="hand-numbers">${renderHand(you, "you")}</strong></div>
           <div class="sum-value">${you.reduce((sum, n) => sum + n, 0)} <small>/ 15</small></div>
         </div>
         ${state.status !== "playing" ? `<div class="result-panel"><strong>${turnText}</strong>${state.status === "draw" ? "<span>Все числа закончились.</span>" : ""}<button class="primary-button" id="again">В меню</button></div>` : ""}
