@@ -40,7 +40,6 @@ async function initYandex(): Promise<void> {
 function renderMenu(): void {
   app.innerHTML = `
     <main class="shell">
-      <header class="topbar"><div class="brand-mark">15</div><span>PICK / 15</span><span class="top-status">${escapeHtml(statusMessage)}</span></header>
       <section class="hero">
         <div class="eyebrow">ЧИСЛОВАЯ ДУЭЛЬ</div>
         <h1>Игра в <span>15</span></h1>
@@ -56,7 +55,6 @@ function renderMenu(): void {
         </div>
         <div class="mode-note">Онлайн-матчи используют асинхронные партии игроков Яндекс Игр.</div>
       </section>
-      <footer>Короткая игра. Один победитель.</footer>
     </main>`;
   document.querySelector("#online")?.addEventListener("click", () => startGame(true));
   document.querySelector("#practice")?.addEventListener("click", () => startGame(false));
@@ -78,23 +76,17 @@ function renderGame(): void {
 
   app.innerHTML = `
     <main class="shell game-shell">
-      <header class="topbar"><button class="back-button" id="back">←</button><span class="brand-mark small">15</span><span>PICK / 15</span><span class="top-status">${onlineSession ? "ОНЛАЙН-ПАРТИЯ" : "ТРЕНИРОВКА"}</span></header>
+      <button class="back-button game-back" id="back" aria-label="Назад">←</button>
       <section class="game-layout">
-        <div class="game-heading"><div class="eyebrow">ЧИСЛОВАЯ ДУЭЛЬ</div><h1>Собери <span>15</span></h1><p>Выбери три числа, сумма которых равна 15.</p></div>
-        <div class="players">
-          <div class="player-card active"><div class="player-avatar">Я</div><div><small>ИГРОК 1</small><strong>${escapeHtml(playerName)}</strong></div><div class="player-numbers">${you.length}/3</div></div>
-          <div class="versus">VS</div>
-          <div class="player-card"><div class="player-avatar opponent-avatar">2</div><div><small>ИГРОК 2</small><strong>${escapeHtml(opponentName)}</strong></div><div class="player-numbers">${opponent.length}/3</div></div>
-        </div>
         <div class="turn-label">${turnText}</div>
+        <div class="picked-row opponent-picked-row">
+          <div><small>ЧИСЛА СОПЕРНИКА</small><strong>${opponent.length ? opponent.join("  +  ") : "—"}</strong></div>
+          <div class="sum-value opponent-sum">${opponentSum} <small>/ 15</small></div>
+        </div>
         <div class="board">${numberButtons}</div>
         <div class="picked-row">
           <div><small>ВАШИ ЧИСЛА</small><strong>${you.length ? you.join("  +  ") : "—"}</strong></div>
           <div class="sum-value">${you.reduce((sum, n) => sum + n, 0)} <small>/ 15</small></div>
-        </div>
-        <div class="picked-row opponent-picked-row">
-          <div><small>ЧИСЛА СОПЕРНИКА</small><strong>${opponent.length ? opponent.join("  +  ") : "—"}</strong></div>
-          <div class="sum-value opponent-sum">${opponentSum} <small>/ 15</small></div>
         </div>
         ${state.status !== "playing" ? `<div class="result-panel"><strong>${turnText}</strong><span>${state.status === "you-won" ? "Вы собрали комбинацию 15." : state.status === "opponent-won" ? "Соперник собрал комбинацию 15." : "Все числа закончились."}</span><button class="primary-button" id="again">В меню</button></div>` : ""}
         <div class="game-footnote">${busy ? "Ожидаем ход соперника" : state.status === "playing" ? "Числа нельзя выбирать повторно" : "Партия завершена"}</div>
